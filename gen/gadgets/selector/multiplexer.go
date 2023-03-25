@@ -2,17 +2,13 @@
 
 package selector
 
-import "github.com/consensys/gnark/frontend"
-
 import (
+	"apm/csgo/api"
 	"github.com/consensys/gnark/backend/hint"
-	"math/big"
+	"github.com/consensys/gnark/frontend"
 )
 
-func init() {
-	// register hints
-	hint.Register(GetHints()...)
-}
+import "math/big"
 
 // Map is a key value associative array: the output will be values[i] such that keys[i] == queryKey.
 // If keys do not contain queryKey, no proofs can be generated. If keys has more than one key that
@@ -98,8 +94,7 @@ func mapIndicators(_ *big.Int, inputs []*big.Int, results []*big.Int) error {
 	return nil
 }
 
-// GetHints returns all hint functions used in this package. This method is
-// useful for registering all hints in the solver.
-func GetHints() []hint.Function {
-	return []hint.Function{muxIndicators, mapIndicators}
+func init() {
+	hint.Register(muxIndicators)
+	hint.Register(mapIndicators)
 }

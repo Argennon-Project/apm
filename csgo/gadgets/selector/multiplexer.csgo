@@ -1,14 +1,6 @@
 package selector
 
-import (
-	"github.com/consensys/gnark/backend/hint"
-	"math/big"
-)
-
-func init() {
-	// register hints
-	hint.Register(GetHints()...)
-}
+import "math/big"
 
 // Map is a key value associative array: the output will be values[i] such that keys[i] == queryKey.
 // If keys do not contain queryKey, no proofs can be generated. If keys has more than one key that
@@ -65,7 +57,7 @@ rel generateSelector<wantMux bool>(sel csv, keys, values []csv) csv {
 
 // muxIndicators is a hint function used within [Mux] function. It must be
 // provided to the prover when circuit uses it.
-func muxIndicators(_ *big.Int, inputs []*big.Int, results []*big.Int) error {
+hint muxIndicators(_ *big.Int, inputs []*big.Int, results []*big.Int) error {
 	sel := inputs[0]
 	for i := 0; i < len(results); i++ {
 		// `i` is an int which can be int32 or int64. We convert `i` to int64 then to bigInt,
@@ -81,7 +73,7 @@ func muxIndicators(_ *big.Int, inputs []*big.Int, results []*big.Int) error {
 
 // mapIndicators is a hint function used within [Map] function. It must be
 // provided to the prover when circuit uses it.
-func mapIndicators(_ *big.Int, inputs []*big.Int, results []*big.Int) error {
+hint mapIndicators(_ *big.Int, inputs []*big.Int, results []*big.Int) error {
 	key := inputs[len(inputs)-1]
 	// We must make sure that we are initializing all elements of results
 	for i := 0; i < len(results); i++ {
@@ -94,8 +86,3 @@ func mapIndicators(_ *big.Int, inputs []*big.Int, results []*big.Int) error {
 	return nil
 }
 
-// GetHints returns all hint functions used in this package. This method is
-// useful for registering all hints in the solver.
-func GetHints() []hint.Function {
-	return []hint.Function{muxIndicators, mapIndicators}
-}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"apm/csgo/api"
 	"apm/gen/gadgets/selector"
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/groth16"
@@ -18,8 +19,8 @@ type MuxCircuit struct {
 }
 
 // Define defines the arithmetic circuit.
-func (c *MuxCircuit) Define(api frontend.API) error {
-	selector.Configure(api)
+func (c *MuxCircuit) Define(a frontend.API) error {
+	api.Api = a
 	result := selector.Mux(c.Selector, c.In[:]...)
 	api.AssertIsEqual(result, c.Expected)
 	return nil

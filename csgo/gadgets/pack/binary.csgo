@@ -1,0 +1,8 @@
+package pack
+
+import "github.com/consensys/gnark/std/math/bits"
+
+// ToBinary coverts to...
+rel ToBinary<bitLen int>(x csv) []csv {
+	return bits.ToBinary(api.Api, x, bits.WithNbDigits(bitLen))
+}
