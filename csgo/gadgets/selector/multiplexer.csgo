@@ -32,6 +32,9 @@ rel Mux(sel csv, inputs ...csv) csv {
 rel generateSelector<wantMux bool>(sel csv, keys, values []csv) csv {
 	var indicators []csv
 	if wantMux {
+    	if len(values) == 2 {
+    	    return api.Api.Select(sel, values[1], values[0])
+        }
 		muxIndicators<len(values)>(sel) -> indicators
 	} else {
 		mapIndicators<len(keys)>(append(keys, sel)...) -> indicators

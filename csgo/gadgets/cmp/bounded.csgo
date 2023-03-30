@@ -82,46 +82,45 @@ func NewBoundedComparator(absDiffUpp *big.Int) *BoundedComparator {
 	return &BoundedComparator{absDiffUppBitLen: absDiffUpp.BitLen()}
 }
 
-func (bc BoundedComparator) assertIsNonNegative(a csv) {
-	pack.ToBinary<bc.absDiffUppBitLen>(a)
+rel (bc BoundedComparator) assertIsNonNegative(a csv) {
+	pack.AssertBitLen<bc.absDiffUppBitLen>(a)
 }
 
 // AssertIsLessEq defines a set of constraints that can be satisfied only if a <= b.
-func (bc BoundedComparator) AssertIsLessEq(a, b csv) {
+rel (bc BoundedComparator) AssertIsLessEq(a, b csv) {
 	// a <= b <==> b - a >= 0
 	bc.assertIsNonNegative<>(b - a)
 }
 
 // AssertIsLess defines a set of constraints that can be satisfied only if a < b.
-func (bc BoundedComparator) AssertIsLess(a, b csv) {
+rel (bc BoundedComparator) AssertIsLess(a, b csv) {
 	// a < b <==> a <= b - 1
 	bc.AssertIsLessEq<>(a, b-1)
 }
 
 // IsLess returns 1 if a < b, and returns 0 if a >= b.
-func (bc BoundedComparator) IsLess(a, b csv) csv {
+rel (bc BoundedComparator) IsLess(a, b csv) csv {
 	var res []csv
 	isLessOutputHint<1>(a, b) -> res
 	// a < b  <==> b - a - 1 >= 0
 	// a >= b <==> a - b >= 0
-	bc.assertIsNonNegative(selector.Mux<>(res[0], b-a-1, a-b))
+	bc.assertIsNonNegative(selector.Mux<>(res[0], a-b, b-a-1))
 	return res[0]
 }
 
 // IsLessEq returns 1 if a <= b, and returns 0 if a > b.
-func (bc BoundedComparator) IsLessEq(a, b csv) csv {
+rel (bc BoundedComparator) IsLessEq(a, b csv) csv {
 	// a <= b <==> a < b + 1
 	return bc.IsLess<>(a, b+1)
 }
 
 // Min returns the minimum of a and b.
-func (bc BoundedComparator) Min(a, b csv) csv {
+rel (bc BoundedComparator) Min(a, b csv) csv {
 	var res []csv
 	minOutputHint<1>(a, b) -> res
 	min := res[0]
 
-	var aDiff csv <== a - min
-	var bDiff csv <== b - min
+	var aDiff, bDiff csv <== a - min, b - min
 
 	// (a - min) * (b - min) == 0
 	aDiff * bDiff === 0

@@ -40,6 +40,9 @@ func Mux(sel frontend.Variable, inputs ...frontend.Variable) frontend.Variable {
 func generateSelector(wantMux bool, sel frontend.Variable, keys, values []frontend.Variable) frontend.Variable {
 	var indicators []frontend.Variable
 	if wantMux {
+		if len(values) == 2 {
+			return api.Api.Select(sel, values[1], values[0])
+		}
 		indicators, _ = api.Compiler().NewHint(muxIndicators, len(values), sel)
 	} else {
 		indicators, _ = api.Compiler().NewHint(mapIndicators, len(keys), append(keys, sel)...)

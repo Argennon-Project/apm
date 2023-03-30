@@ -9,7 +9,7 @@ import (
 
 import "github.com/consensys/gnark/std/math/bits"
 
-// ToBinary coverts to...
-func ToBinary(bitLen int, x frontend.Variable) []frontend.Variable {
-	return bits.ToBinary(api.Api, x, bits.WithNbDigits(bitLen))
+// AssertBitLen ensures that the unsigned binary representation of x has less than bitLen bits.
+func AssertBitLen(bitLen int, x frontend.Variable) {
+	bits.ToBinary(api.Api, x, bits.WithNbDigits(bitLen))
 }

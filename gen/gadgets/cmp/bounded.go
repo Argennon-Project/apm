@@ -91,7 +91,7 @@ func NewBoundedComparator(absDiffUpp *big.Int) *BoundedComparator {
 }
 
 func (bc BoundedComparator) assertIsNonNegative(a frontend.Variable) {
-	pack.ToBinary(bc.absDiffUppBitLen, a)
+	pack.AssertBitLen(bc.absDiffUppBitLen, a)
 }
 
 // AssertIsLessEq defines a set of constraints that can be satisfied only if a <= b.
@@ -112,7 +112,7 @@ func (bc BoundedComparator) IsLess(a, b frontend.Variable) frontend.Variable {
 	res, _ = api.Compiler().NewHint(isLessOutputHint, 1, a, b)
 	// a < b  <==> b - a - 1 >= 0
 	// a >= b <==> a - b >= 0
-	bc.assertIsNonNegative(selector.Mux(res[0], api.Sub(api.Sub(b, a), 1), api.Sub(a, b)))
+	bc.assertIsNonNegative(selector.Mux(res[0], api.Sub(a, b), api.Sub(api.Sub(b, a), 1)))
 	return res[0]
 }
 
@@ -128,8 +128,7 @@ func (bc BoundedComparator) Min(a, b frontend.Variable) frontend.Variable {
 	res, _ = api.Compiler().NewHint(minOutputHint, 1, a, b)
 	min := res[0]
 
-	var aDiff frontend.Variable = api.Sub(a, min)
-	var bDiff frontend.Variable = api.Sub(b, min)
+	var aDiff, bDiff frontend.Variable = api.Sub(a, min), api.Sub(b, min)
 
 	// (a - min) * (b - min) == 0
 	api.AssertIsEqual(api.Mul(aDiff, bDiff), 0)
