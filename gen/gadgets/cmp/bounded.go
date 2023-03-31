@@ -3,15 +3,15 @@
 package cmp
 
 import (
-	"apm/csgo/api"
+	"github.com/argennon-project/csgo/transpiled/gnark/api"
 	"github.com/consensys/gnark/backend/hint"
 	"github.com/consensys/gnark/frontend"
 )
 
 import (
-	"apm/gen/gadgets/pack"
-	"apm/gen/gadgets/selector"
-	"apm/gen/runtime"
+	"apm/gadgets/selector"
+	"github.com/argennon-project/csgo/transpiled/convert"
+	"github.com/argennon-project/csgo/transpiled/runtime"
 	"math/big"
 )
 
@@ -91,7 +91,7 @@ func NewBoundedComparator(absDiffUpp *big.Int) *BoundedComparator {
 }
 
 func (bc BoundedComparator) assertIsNonNegative(a frontend.Variable) {
-	pack.AssertBitLen(bc.absDiffUppBitLen, a)
+	convert.AssertBitLen(bc.absDiffUppBitLen, a)
 }
 
 // AssertIsLessEq defines a set of constraints that can be satisfied only if a <= b.

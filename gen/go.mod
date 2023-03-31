@@ -3,6 +3,7 @@ module apm
 go 1.20
 
 require (
+	github.com/argennon-project/csgo/transpiled v0.0.0-20230331152136-6eadf9032139
 	github.com/consensys/gnark v0.8.0
 	github.com/consensys/gnark-crypto v0.9.1
 )

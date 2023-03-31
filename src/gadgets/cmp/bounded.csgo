@@ -1,9 +1,9 @@
 package cmp
 
 import (
-	"apm/csgo/gadgets/pack"
-	"apm/csgo/gadgets/selector"
-	"apm/csgo/runtime"
+	"apm/gadgets/selector"
+	"github.com/argennon-project/csgo/transpiled/runtime"
+	"github.com/argennon-project/csgo/transpiled/convert"
 	"math/big"
 )
 
@@ -83,7 +83,7 @@ func NewBoundedComparator(absDiffUpp *big.Int) *BoundedComparator {
 }
 
 rel (bc BoundedComparator) assertIsNonNegative(a csv) {
-	pack.AssertBitLen<bc.absDiffUppBitLen>(a)
+	convert.AssertBitLen<bc.absDiffUppBitLen>(a)
 }
 
 // AssertIsLessEq defines a set of constraints that can be satisfied only if a <= b.

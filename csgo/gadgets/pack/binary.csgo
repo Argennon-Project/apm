@@ -1,8 +1,0 @@
-package pack
-
-import "github.com/consensys/gnark/std/math/bits"
-
-// AssertBitLen ensures that the unsigned binary representation of x has less than bitLen bits.
-rel AssertBitLen<bitLen int>(x csv) {
-	bits.ToBinary(api.Api, x, bits.WithNbDigits(bitLen))
-}

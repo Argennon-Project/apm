@@ -1,15 +1,15 @@
 package main
 
 import (
-	"apm/csgo/api"
-	"apm/gen/gadgets/selector"
+	"apm/gadgets/selector"
+	"github.com/argennon-project/csgo/transpiled/gnark/api"
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/groth16"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/frontend/cs/r1cs"
 )
 
-//go:generate java -jar csgot.jar csgo gen
+//go:generate java -jar ../csgot.jar ../src ../gen
 
 // MuxCircuit is a minimal circuit using a selector mux.
 type MuxCircuit struct {
