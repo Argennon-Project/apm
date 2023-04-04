@@ -1,0 +1,81 @@
+package apm
+
+import (
+	"apm/gadgets/memory"
+	"github.com/argennon-project/csgo/transpiled/cmp"
+	"github.com/argennon-project/csgo/transpiled/selector"
+	"math/big"
+)
+
+var comparator *cmp.BoundedComparator
+
+type State struct {
+	instructions []csv
+	pc           csv
+	acc          csv
+	cache        memory.Writable
+}
+
+func NewState(instructions []csv, cache memory.Writable) *State {
+	comparator = cmp.NewBoundedComparator(big.NewInt(1<<32-1), false)
+	return &State{
+		instructions: instructions,
+		pc: 0,
+		acc: 0,
+		cache: cache,
+	}
+}
+
+rel (s *State) Transit() {
+    var instruction, _ <== selector.Mux<>(s.pc, s.instructions...)
+	var op, memRead, memWrite, jmp, instructionSmallOp, instructionBigOp <== decodeInstruction<>(instruction)
+
+	var readAddr, _ <== selector.Mux<>(memRead, 0, instructionBigOp)
+	var read, indicators <== s.cache.Read<>(readAddr)
+
+	var operand, _ <== selector.Mux<>(memRead, instructionBigOp, read)
+
+	var add <== s.acc + operand
+	var sub <== s.acc - operand
+	var mul <== s.acc * operand
+	var less <== comparator.IsLess<>(s.acc, operand)
+
+	var res, _ <== selector.Mux<>(op, add, sub, mul, 0-sub)
+	s.acc, _ <== selector.Mux<>(memWrite, res, instructionSmallOp)
+
+	var write, _ <== selector.Mux<>(memWrite, read, res)
+	s.cache.Write<>(write, indicators)
+
+    var jumpAddr, _ <== selector.Mux<>(less, s.pc+1, instructionSmallOp)
+	s.pc, _ <== selector.Mux<>(jmp, s.pc+1, jumpAddr)
+}
+
+rel (s *State) AssertOutputIs(values []csv) {
+	s.cache.AssertValuesAre(values)
+}
+
+rel decodeInstruction(instruction csv) (op, memRead, memWrite, jmp, smallOperand, bigOperand csv) {
+	var parts []csv
+	decodeHint<6>(instruction) -> parts
+
+	parts[0] + (1<<2)*parts[1] + (1<<3)*parts[2] + (1<<4)*parts[3] + (1<<5)*parts[4] + (1<<21)*parts[5] === instruction
+
+	op <== parts[0]
+	memRead <== parts[1]
+	memWrite <== parts[2]
+	jmp <== parts[3]
+	smallOperand <== parts[4]
+	bigOperand <== parts[5]
+	return
+}
+
+hint decodeHint(_ *big.Int, inputs, results []*big.Int) error {
+	instruction := inputs[0]
+	results[0].And(instruction, big.NewInt(0b11))       // op
+	results[1].SetUint64(uint64(instruction.Bit(2)))	// memRead
+	results[2].SetUint64(uint64(instruction.Bit(3)))	// memWrite
+	results[3].SetUint64(uint64(instruction.Bit(4)))	// jmp
+	results[4].And(new(big.Int).Rsh(instruction, 5), big.NewInt(1<<16-1)) // smallOperand
+    results[5].Rsh(instruction, 21)                     // bigOperand
+	return nil
+}

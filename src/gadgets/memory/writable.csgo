@@ -1,0 +1,34 @@
+package memory
+
+import "github.com/argennon-project/csgo/transpiled/selector"
+
+
+type Writable struct {
+	keys        []csv
+	values      []csv
+	writableLen int
+}
+
+func NewWritable(keys, values []csv, writableLen int) *Writable {
+	return &Writable{keys: keys, values: values, writableLen: writableLen}
+}
+
+rel (mem *Writable) AssertValuesAre(values []csv) {
+	for i := 0; i < len(values); i++ {
+		mem.values[i] === values[i]
+	}
+}
+
+rel (mem *Writable) Read(addrKey csv) (readValue csv, indicators []csv) {
+	return selector.Map<>(addrKey, mem.keys, mem.values)
+}
+
+rel (mem *Writable) Write(wrValue csv, indicators []csv) {
+	if len(indicators) != mem.writableLen {
+		panic("invalid indicators")
+	}
+
+	for i := 0; i < mem.writableLen; i++ {
+		mem.values[i] <== indicators[i]*(wrValue-mem.values[i]) + mem.values[i]
+	}
+}
