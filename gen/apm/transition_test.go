@@ -34,6 +34,26 @@ func Test_Transition(t *testing.T) {
 		ValuesInit: [3]frontend.Variable{5, 4, 9},
 		ValuesOut:  [3]frontend.Variable{5, 7, 9},
 	})
+
+	assert.ProverSucceeded(&simpleProgramCircuit{}, &simpleProgramCircuit{
+		Instructions: [2]frontend.Variable{
+			new(big.Int).SetBytes([]byte{0b1000111, 0b011_00000, 0, 0, 0, 0, 0, 0, 1, 0b011_01000}),
+			new(big.Int).SetBytes([]byte{0}),
+		},
+		Keys:       [3]frontend.Variable{0, 9, 11},
+		ValuesInit: [3]frontend.Variable{5, 4, 9},
+		ValuesOut:  [3]frontend.Variable{5, 4, 571},
+	})
+
+	assert.ProverSucceeded(&simpleProgramCircuit{}, &simpleProgramCircuit{
+		Instructions: [2]frontend.Variable{
+			new(big.Int).SetBytes([]byte{1, 0b011_00100}),
+			new(big.Int).SetBytes([]byte{1, 0b001_01111}),
+		},
+		Keys:       [3]frontend.Variable{0, 9, 11},
+		ValuesInit: [3]frontend.Variable{5, 7, 3},
+		ValuesOut:  [3]frontend.Variable{5, 4, 3},
+	})
 }
 
 type decodeCircuit struct {
