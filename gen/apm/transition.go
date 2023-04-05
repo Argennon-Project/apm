@@ -70,7 +70,13 @@ func decodeInstruction(instruction frontend.Variable) (op, memRead, memWrite, jm
 
 	pow2_69 := new(big.Int).Lsh(big.NewInt(1), 69)
 	api.AssertIsEqual(api.Add(api.Add(api.Add(api.Add(api.Add(parts[0], api.Mul(1<<2, parts[1])), api.Mul(1<<3, parts[2])), api.Mul(1<<4, parts[3])), api.Mul(1<<5, parts[4])), api.Mul(pow2_69, parts[5])), instruction)
-
+	// We need to constrain each part of the decoded instruction to be in the
+	// appropriate range. This is done outside of this function:
+	// op, memRead, memWrite are constrained by Multiplexers
+	// jmp is constrained explicitly
+	// memAddr is constrained by the memory module
+	// operand does not need to be constrained since it is the last part of the
+	// decomposition
 	op = parts[0]
 	memRead = parts[1]
 	memWrite = parts[2]

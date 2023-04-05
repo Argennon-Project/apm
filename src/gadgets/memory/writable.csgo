@@ -2,7 +2,6 @@ package memory
 
 import "github.com/argennon-project/csgo/transpiled/selector"
 
-
 type Writable struct {
 	keys        []csv
 	values      []csv
