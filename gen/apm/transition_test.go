@@ -5,6 +5,7 @@ import (
 	"github.com/argennon-project/csgo/transpiled/gnark/api"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/test"
+	"math/big"
 	"testing"
 )
 
@@ -26,8 +27,8 @@ func Test_Transition(t *testing.T) {
 	assert := test.NewAssert(t)
 	assert.ProverSucceeded(&simpleProgramCircuit{}, &simpleProgramCircuit{
 		Instructions: [2]frontend.Variable{
-			0b11_0000000000000000_000_00,
-			0b1111_0000000000000000_011_00,
+			new(big.Int).SetBytes([]byte{0b011_00000, 0, 0, 0, 0, 0, 0, 0, 0}),
+			new(big.Int).SetBytes([]byte{0b1, 0b111_01100}),
 		},
 		Keys:       [3]frontend.Variable{0, 15, 22},
 		ValuesInit: [3]frontend.Variable{5, 4, 9},
@@ -38,7 +39,7 @@ func Test_Transition(t *testing.T) {
 type decodeCircuit struct {
 	Instruction             frontend.Variable
 	Op, MemRead, MemWr, Jmp frontend.Variable
-	SmallOp, BigOp          frontend.Variable
+	MemAddr, Operand        frontend.Variable
 }
 
 func (c *decodeCircuit) Define(a frontend.API) error {
@@ -48,8 +49,8 @@ func (c *decodeCircuit) Define(a frontend.API) error {
 	a.AssertIsEqual(gotMemRead, c.MemRead)
 	a.AssertIsEqual(gotMemWr, c.MemWr)
 	a.AssertIsEqual(gotJmp, c.Jmp)
-	a.AssertIsEqual(gotSmall, c.SmallOp)
-	a.AssertIsEqual(gotBig, c.BigOp)
+	a.AssertIsEqual(gotSmall, c.MemAddr)
+	a.AssertIsEqual(gotBig, c.Operand)
 	return nil
 }
 
@@ -61,27 +62,17 @@ func Test_decodeInstruction(t *testing.T) {
 		MemRead:     1,
 		MemWr:       0,
 		Jmp:         1,
-		SmallOp:     0,
-		BigOp:       0,
+		MemAddr:     0,
+		Operand:     0,
 	})
 
 	assert.ProverSucceeded(&decodeCircuit{}, &decodeCircuit{
-		Instruction: 0b1_0000000000000000_000_00,
-		Op:          0b00,
-		MemRead:     0,
-		MemWr:       0,
-		Jmp:         0,
-		SmallOp:     0,
-		BigOp:       1,
-	})
-
-	assert.ProverSucceeded(&decodeCircuit{}, &decodeCircuit{
-		Instruction: 0b101_1100101110001110_010_10,
+		Instruction: new(big.Int).SetBytes([]byte{0b101, 0b001_11001, 0, 0, 0, 0, 0, 0, 0b10010111, 0b110_010_10}),
 		Op:          0b10,
 		MemRead:     0,
 		MemWr:       1,
 		Jmp:         0,
-		SmallOp:     0b1100_1011_1000_1110,
-		BigOp:       0b101,
+		MemAddr:     new(big.Int).SetBytes([]byte{0b11001000, 0, 0, 0, 0, 0, 0b100, 0b10111110}),
+		Operand:     0b101001,
 	})
 }
