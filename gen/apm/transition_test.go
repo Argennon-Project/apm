@@ -9,12 +9,12 @@ import (
 	"testing"
 )
 
-type simpleProgramCircuit struct {
+type twoInstructionCircuit struct {
 	Instructions                [2]frontend.Variable
 	Keys, ValuesInit, ValuesOut [3]frontend.Variable
 }
 
-func (c *simpleProgramCircuit) Define(a frontend.API) error {
+func (c *twoInstructionCircuit) Define(a frontend.API) error {
 	api.Api = a
 	s := NewState(c.Instructions[:], *memory.NewWritable(c.Keys[:], c.ValuesInit[:], len(c.ValuesInit)))
 	s.Transit()
@@ -23,9 +23,24 @@ func (c *simpleProgramCircuit) Define(a frontend.API) error {
 	return nil
 }
 
+type simpleProgramCircuit struct {
+	Instructions                [3]frontend.Variable
+	Keys, ValuesInit, ValuesOut [4]frontend.Variable
+}
+
+func (c *simpleProgramCircuit) Define(a frontend.API) error {
+	api.Api = a
+	s := NewState(c.Instructions[:], *memory.NewWritable(c.Keys[:], c.ValuesInit[:], len(c.ValuesInit)))
+	for i := 0; i < 7; i++ {
+		s.Transit()
+	}
+	s.AssertOutputIs(c.ValuesOut[:])
+	return nil
+}
+
 func Test_Transition(t *testing.T) {
 	assert := test.NewAssert(t)
-	assert.ProverSucceeded(&simpleProgramCircuit{}, &simpleProgramCircuit{
+	assert.ProverSucceeded(&twoInstructionCircuit{}, &twoInstructionCircuit{
 		Instructions: [2]frontend.Variable{
 			new(big.Int).SetBytes([]byte{0b011_00000, 0, 0, 0, 0, 0, 0, 0, 0}),
 			new(big.Int).SetBytes([]byte{0b1, 0b111_01100}),
@@ -35,7 +50,7 @@ func Test_Transition(t *testing.T) {
 		ValuesOut:  [3]frontend.Variable{5, 7, 9},
 	})
 
-	assert.ProverSucceeded(&simpleProgramCircuit{}, &simpleProgramCircuit{
+	assert.ProverSucceeded(&twoInstructionCircuit{}, &twoInstructionCircuit{
 		Instructions: [2]frontend.Variable{
 			new(big.Int).SetBytes([]byte{0b1000111, 0b011_00000, 0, 0, 0, 0, 0, 0, 1, 0b011_01000}),
 			new(big.Int).SetBytes([]byte{0}),
@@ -45,7 +60,7 @@ func Test_Transition(t *testing.T) {
 		ValuesOut:  [3]frontend.Variable{5, 4, 571},
 	})
 
-	assert.ProverSucceeded(&simpleProgramCircuit{}, &simpleProgramCircuit{
+	assert.ProverSucceeded(&twoInstructionCircuit{}, &twoInstructionCircuit{
 		Instructions: [2]frontend.Variable{
 			new(big.Int).SetBytes([]byte{1, 0b011_00100}),
 			new(big.Int).SetBytes([]byte{1, 0b001_01111}),
@@ -53,6 +68,17 @@ func Test_Transition(t *testing.T) {
 		Keys:       [3]frontend.Variable{0, 9, 11},
 		ValuesInit: [3]frontend.Variable{5, 7, 3},
 		ValuesOut:  [3]frontend.Variable{5, 4, 3},
+	})
+
+	assert.ProverSucceeded(&simpleProgramCircuit{}, &simpleProgramCircuit{
+		Instructions: [3]frontend.Variable{
+			new(big.Int).SetBytes([]byte{0b001_00000, 0, 0, 0, 0, 0, 0, 0, 0}),
+			new(big.Int).SetBytes([]byte{0b001_10100}),
+			new(big.Int).SetBytes([]byte{0b011_01100}),
+		},
+		Keys:       [4]frontend.Variable{0, 1, 3, 7},
+		ValuesInit: [4]frontend.Variable{0, 3, 2, 10},
+		ValuesOut:  [4]frontend.Variable{0, 3, 5, 10},
 	})
 }
 

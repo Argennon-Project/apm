@@ -40,16 +40,14 @@ rel (s *State) Transit() {
 	var less <== comparator.IsLess<>(s.acc, operand)
 
 	var res, _ <== selector.Mux<>(op, add, sub, mul, 0-sub)
-	s.acc, _ <== selector.Mux<>(memWrite, res, instructionOp)
+	s.acc, _ <== selector.Mux<>(jmp, res, s.acc)
 
 	var write, _ <== selector.Mux<>(memWrite, read, res)
 	s.cache.Write<>(write, indicators)
 
-	// less is constrained to be a boolean but jmp is not, so we need to add a
-	// boolean constraint for jmp.
-	api.Api.AssertIsBoolean(jmp)
-	var jmpAndLess <== jmp * less
-	s.pc <== (1-jmpAndLess)*(s.pc+1) + jmpAndLess*instructionOp
+	// both jmp and less are already constrained to be boolean.
+	s.pc <== s.pc + 1
+	s.pc <== s.pc + jmp*less*(instructionOp-s.pc)
 }
 
 rel (s *State) AssertOutputIs(values []csv) {

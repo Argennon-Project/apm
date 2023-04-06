@@ -48,16 +48,14 @@ func (s *State) Transit() {
 	var less = comparator.IsLess(s.acc, operand)
 
 	var res, _ = selector.Mux(op, add, sub, mul, api.Sub(0, sub))
-	s.acc, _ = selector.Mux(memWrite, res, instructionOp)
+	s.acc, _ = selector.Mux(jmp, res, s.acc)
 
 	var write, _ = selector.Mux(memWrite, read, res)
 	s.cache.Write(write, indicators)
 
-	// less is constrained to be a boolean but jmp is not, so we need to add a
-	// boolean constraint for jmp.
-	api.Api.AssertIsBoolean(jmp)
-	var jmpAndLess = api.Mul(jmp, less)
-	s.pc = api.Add(api.Mul(api.Sub(1, jmpAndLess), api.Add(s.pc, 1)), api.Mul(jmpAndLess, instructionOp))
+	// both jmp and less are already constrained to be boolean.
+	s.pc = api.Add(s.pc, 1)
+	s.pc = api.Add(s.pc, api.Mul(api.Mul(jmp, less), api.Sub(instructionOp, s.pc)))
 }
 
 func (s *State) AssertOutputIs(values []frontend.Variable) {
